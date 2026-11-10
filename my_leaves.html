@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Leaves - TaskHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(30, 64, 175, 0.15);
+            
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --info: #0284c7;
+            --input-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6; 
+            --primary-hover: #60a5fa;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --bg-color: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.9);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-main); 
+            transition: background-color 0.3s, color 0.3s; 
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* الهالة والشبكة */
+        .premium-glow {
+            position: fixed; top: -20%; right: -15%; width: 65%; height: 140%;
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            filter: blur(140px); border-radius: 50%; z-index: 0; opacity: 0.8;
+            animation: pulseGlow 10s infinite alternate ease-in-out; pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 1; pointer-events: none;
+        }
+
+        nav { 
+            background-color: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
+        }
+        [data-theme="dark"] nav { background-color: rgba(15, 23, 42, 0.75); }
+
+        .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; color: var(--text-main); }
+        .brand-logo span { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .theme-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
+        .back-btn { background-color: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .back-btn:hover { background-color: #475569; transform: translateY(-2px); }
+
+        /* التخطيط المقسوم (Sticky Split View) */
+        .container { max-width: 1150px; margin: 40px auto; padding: 0 20px; display: flex; gap: 30px; align-items: flex-start; position: relative; z-index: 2; }
+        
+        @media (max-width: 850px) {
+            .container { flex-direction: column; }
+            .form-side { position: static !important; }
+        }
+
+        .form-side { 
+            flex: 1; min-width: 320px; 
+            background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border-color); 
+            position: sticky; top: 100px;
+        }
+        
+        .history-side { flex: 2; min-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+
+        h2 { color: var(--primary-color); margin-top: 0; margin-bottom: 25px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .history-side h2 { padding-bottom: 15px; border-bottom: 2px solid var(--border-color); }
+
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-family: inherit; font-size: 14px; background: var(--input-bg); color: var(--text-main); transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
+        
+        .date-row { display: flex; gap: 15px; }
+        .date-row .form-group { flex: 1; }
+
+        .btn-submit { width: 100%; background: var(--primary-gradient); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3); display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.4); }
+
+        /* بطاقات الإجازات (History Cards) */
+        .leave-card {
+            background-color: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color); border-left: 6px solid var(--warning);
+            transition: 0.3s; display: flex; flex-direction: column; gap: 15px; position: relative;
+        }
+        .leave-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(30, 64, 175, 0.08); border-color: rgba(30, 64, 175, 0.3); }
+        .leave-card.Approved { border-left-color: var(--success); }
+        .leave-card.Rejected { border-left-color: var(--danger); }
+
+        .leave-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        .type-badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .type-Annual { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+        .type-Sick { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); }
+        .type-Emergency { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+
+        .status-pill { padding: 5px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
+        .status-Pending { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-Approved { background-color: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-Rejected { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .leave-body { background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); line-height: 1.6; }
+        [data-theme="dark"] .leave-body { background: rgba(255,255,255,0.03); }
+
+        .manager-note { margin-top: 5px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; font-size: 13px; color: var(--text-main); border: 1px dashed rgba(139, 92, 246, 0.4); }
+        [data-theme="dark"] .manager-note { background: rgba(168, 85, 247, 0.1); }
+
+        .btn-delete { align-self: flex-end; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .empty-msg { color: var(--text-muted); font-style: italic; text-align: center; padding: 40px; background: rgba(0,0,0,0.02); border-radius: 16px; border: 1px dashed var(--border-color); font-size: 15px; }
+
+        /* Toast */
+        #customToast { position: fixed; top: 30px; right: 30px; padding: 15px 25px; border-radius: 12px; color: white; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 10px; }
+        #customToast.show { transform: translateX(0); }
+        .toast-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .toast-error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    </style>
+</head>
+<body>
+
+    <div class="premium-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <nav>
+        <div class="brand-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>TaskHub</span>
+        </div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            <button class="back-btn" onclick="window.location.href='emp_dashboard.html'">Back to Dashboard</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Form Side (Sticky) -->
+        <div class="form-side">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path><line x1="14" y1="2" x2="22" y2="10"></line><line x1="18" y1="2" x2="22" y2="6"></line><line x1="14" y1="6" x2="18" y2="10"></line></svg>
+                Request Leave
+            </h2>
+            
+            <div class="form-group">
+                <label>Leave Type</label>
+                <select id="leaveType">
+                    <option value="Annual">🔵 Annual Leave</option>
+                    <option value="Sick">🔴 Sick Leave</option>
+                    <option value="Emergency">🟠 Emergency Leave</option>
+                </select>
+            </div>
+            
+            <div class="date-row">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Reason / Details</label>
+                <textarea id="leaveReason" rows="4" placeholder="Briefly explain the reason for your leave..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Attach Report/Document (Optional)</label>
+                <input type="file" id="leaveFile" accept=".pdf" style="padding: 8px;">
+            </div>
+            
+            <button class="btn-submit" onclick="submitLeaveRequest()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Submit Request
+            </button>
+        </div>
+
+        <!-- History Side -->
+        <div class="history-side">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                My Leave History
+            </h2>
+            <div id="leaveHistoryList" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Cards will load here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="customToast">
+        <svg id="toastIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMsg">Notification</span>
+    </div>
+
+    <script>
+        let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+        if (!activeUser) window.location.href = "index.html"; 
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (localStorage.getItem("theme") === "dark") { document.documentElement.setAttribute("data-theme", "dark"); themeToggleBtn.innerText = "☀️"; }
+        function toggleTheme() {
+            if (document.documentElement.getAttribute("data-theme") === "dark") {
+                document.documentElement.removeAttribute("data-theme"); localStorage.setItem("theme", "light"); themeToggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark"); localStorage.setItem("theme", "dark"); themeToggleBtn.innerText = "☀️";
+            }
+        }
+
+        function showToast(message, type = "success") {
+            let toast = document.getElementById("customToast"); 
+            let msgSpan = document.getElementById("toastMsg");
+            let iconSvg = document.getElementById("toastIcon");
+            
+            msgSpan.innerText = message; 
+            toast.className = "toast-" + type + " show";
+            
+            if (type === 'success') {
+                iconSvg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            } else {
+                iconSvg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+            }
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        // Set min date to today
+        let today = new Date(); 
+        let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+        document.getElementById("startDate").setAttribute('min', todayStr);
+        document.getElementById("endDate").setAttribute('min', todayStr);
+
+        function loadMyLeaves() {
+            let allLeaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+            let myLeaves = allLeaves.filter(req => req.empId === activeUser.empId);
+            
+            // ترتيب من الأحدث للأقدم
+            myLeaves.sort((a, b) => new Date(b.submitDate) - new Date(a.submitDate));
+
+            let listContainer = document.getElementById("leaveHistoryList");
+            listContainer.innerHTML = "";
+
+            if (myLeaves.length === 0) {
+                listContainer.innerHTML = "<div class='empty-msg'>You haven't submitted any leave requests yet.</div>";
+                return;
+            }
+
+            myLeaves.forEach(req => {
+                let statusIcon = req.status === "Pending" ? "⏳" : (req.status === "Approved" ? "✅" : "❌");
+                let fileLink = req.pdfData ? `<a href="${req.pdfData}" download="${req.pdfName}" target="_blank" style="color: var(--primary-color); font-weight: 600; text-decoration: none; display: inline-block; margin-top: 10px; font-size: 13px;">📎 Attached Document: ${req.pdfName}</a>` : '';
+                let managerNoteHtml = req.managerNote ? `<div class="manager-note"><strong>💬 Manager's Note:</strong> ${req.managerNote}</div>` : '';
+                
+                let deleteBtnHtml = req.status === "Pending" ? `
+                    <button class="btn-delete" onclick="deleteRequest('${req.id}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Cancel Request
+                    </button>
+                ` : '';
+
+                listContainer.innerHTML += `
+                    <div class="leave-card ${req.status}">
+                        <div class="leave-header">
+                            <span class="type-badge type-${req.type}">${req.type} Leave</span>
+                            <span class="status-pill status-${req.status}">${statusIcon} ${req.status}</span>
+                        </div>
+                        <div class="leave-body">
+                            <strong>📅 Dates:</strong> ${req.startDate} to ${req.endDate} <br>
+                            <strong>📝 Reason:</strong> "${req.reason}"
+                            ${fileLink}
+                        </div>
+                        ${managerNoteHtml}
+                        ${deleteBtnHtml}
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: auto; text-align: right;">Submitted: ${req.submitDate}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function submitLeaveRequest() {
+            let type = document.getElementById("leaveType").value;
+            let startDate = document.getElementById("startDate").value;
+            let endDate = document.getElementById("endDate").value;
+            let reason = document.getElementById("leaveReason").value.trim();
+            let fileInput = document.getElementById("leaveFile");
+
+            if (!startDate || !endDate || !reason) {
+                showToast("Please fill all required fields.", "error");
+                return;
+            }
+
+            if (startDate > endDate) {
+                showToast("End date cannot be before start date.", "error");
+                return;
+            }
+
+            let fileData = null;
+            let fileName = null;
+
+            if (fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    saveLeaveToStorage(type, startDate, endDate, reason, e.target.result, file.name);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                saveLeaveToStorage(type, startDate, endDate, reason, null, null);
+            }
+        }
+
+        function saveLeaveToStorage(type, startDate, endDate, reason, pdfData, pdfName) {
+            let allLeaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+            
+            let newRequest = {
+                id: "LR" + Date.now(),
+                empId: activeUser.empId,
+                empName: activeUser.firstName + " " + activeUser.lastName,
+                type: type,
+                startDate: startDate,
+                endDate: endDate,
+                reason: reason,
+                status: "Pending",
+                submitDate: new Date().toLocaleDateString('en-US'),
+                pdfData: pdfData,
+                pdfName: pdfName,
+                managerNote: ""
+            };
+
+            allLeaves.push(newRequest);
+            localStorage.setItem("leaveRequests", JSON.stringify(allLeaves));
+
+            // Reset Form
+            document.getElementById("startDate").value = "";
+            document.getElementById("endDate").value = "";
+            document.getElementById("leaveReason").value = "";
+            document.getElementById("leaveFile").value = "";
+
+            showToast("Leave request submitted successfully!", "success");
+            loadMyLeaves();
+        }
+
+        function deleteRequest(id) {
+            let allLeaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+            allLeaves = allLeaves.filter(req => req.id !== id);
+            localStorage.setItem("leaveRequests", JSON.stringify(allLeaves));
+            
+            showToast("Leave request cancelled.");
+            loadMyLeaves();
+        }
+
+        loadMyLeaves();
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'leaveRequests') loadMyLeaves();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Announcements - TaskHub</title>
+    <!-- خط Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(30, 64, 175, 0.15);
+            
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --info: #0284c7;
+            --input-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6; 
+            --primary-hover: #60a5fa;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --bg-color: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.9);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-main); 
+            transition: background-color 0.3s, color 0.3s; 
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* الهالة والشبكة */
+        .premium-glow {
+            position: fixed; top: -20%; right: -15%; width: 65%; height: 140%;
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            filter: blur(140px); border-radius: 50%; z-index: 0; opacity: 0.8;
+            animation: pulseGlow 10s infinite alternate ease-in-out; pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 1; pointer-events: none;
+        }
+
+        nav { 
+            background-color: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
+        }
+        [data-theme="dark"] nav { background-color: rgba(15, 23, 42, 0.75); }
+
+        .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; color: var(--text-main); cursor: pointer; }
+        .brand-logo span { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .theme-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
+        .back-btn { background-color: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .back-btn:hover { background-color: #475569; transform: translateY(-2px); }
+
+        /* التخطيط الجديد المريح للعين (Sticky Layout) */
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: flex; gap: 30px; align-items: flex-start; position: relative; z-index: 2; }
+        
+        @media (max-width: 850px) {
+            .container { flex-direction: column; }
+            .post-side { position: static !important; }
+        }
+
+        .post-side { 
+            flex: 1; min-width: 320px; 
+            background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border-color); 
+            position: sticky; top: 100px; /* تثبيت الفورم على اليسار أثناء النزول */
+        }
+        
+        .feed-side { flex: 2; min-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+
+        h2 { color: var(--primary-color); margin-top: 0; margin-bottom: 25px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .feed-side h2 { padding-bottom: 15px; border-bottom: 2px solid var(--border-color); }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-family: inherit; font-size: 14px; background: var(--input-bg); color: var(--text-main); transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
+        
+        .btn-submit { width: 100%; background: var(--primary-gradient); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.4); }
+
+        /* بطاقات الإعلانات الاحترافية والممتعة */
+        .ann-card { 
+            background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 25px 30px; border-radius: 16px; 
+            border: 1px solid var(--border-color); border-left: 6px solid var(--info);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+            display: flex; flex-direction: column; gap: 15px; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .ann-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(30, 64, 175, 0.08); }
+        
+        .ann-card.Important { border-left-color: var(--danger); }
+        .ann-card.Event { border-left-color: var(--success); }
+        
+        /* تأثير التثبيت (Pinned) */
+        .ann-card.pinned { border: 2px solid var(--warning); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15); }
+        .pinned-ribbon { position: absolute; top: 15px; right: -30px; background: var(--warning); color: white; font-size: 11px; font-weight: 700; padding: 5px 35px; transform: rotate(45deg); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .ann-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; flex-wrap: wrap; }
+        .ann-title-area { display: flex; flex-direction: column; gap: 8px; }
+        .ann-title { margin: 0; font-size: 20px; font-weight: 700; color: var(--text-main); }
+        
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-block; width: fit-content;}
+        .badge.General { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+        .badge.Important { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        .badge.Event { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+
+        .ann-meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; font-weight: 500;}
+        .author-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-gradient); color: white; display: inline-flex; justify-content: center; align-items: center; font-weight: 700; font-size: 11px; margin-right: 6px; }
+
+        .ann-body { background: rgba(0,0,0,0.02); padding: 20px; border-radius: 12px; font-size: 15px; color: var(--text-main); line-height: 1.8; white-space: pre-wrap; border: 1px solid var(--border-color); }
+        [data-theme="dark"] .ann-body { background: rgba(255,255,255,0.02); }
+
+        /* أزرار الإجراءات (تثبيت + حذف) */
+        .ann-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
+        
+        .btn-action { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; transition: 0.2s; display: flex; align-items: center; gap: 6px; border: none; }
+        
+        .btn-pin { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .btn-pin:hover { background: var(--warning); color: white; }
+        
+        .btn-unpin { background: var(--warning); color: white; border: 1px solid var(--warning); }
+        .btn-unpin:hover { background: #d97706; }
+
+        .btn-delete-ann { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-delete-ann:hover { background: var(--danger); color: white; }
+
+        .empty-msg { color: var(--text-muted); font-style: italic; text-align: center; padding: 40px; background: rgba(0,0,0,0.02); border-radius: 16px; border: 1px dashed var(--border-color); font-size: 15px; }
+
+        /* Delete Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); border: 1px solid var(--border-color); text-align: center; }
+        .modal-content h3 { margin-top: 0; font-size: 22px; font-weight: 700; color: var(--danger); }
+        .modal-actions { display: flex; gap: 15px; margin-top: 25px; }
+        .btn-danger-yes { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; border: none; padding: 12px; flex: 1; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .btn-danger-yes:hover { transform: translateY(-2px); }
+        .btn-cancel-no { background-color: #64748b; color: white; border: none; padding: 12px; flex: 1; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-cancel-no:hover { background-color: #475569; transform: translateY(-2px); }
+
+        /* Toast */
+        #customToast { position: fixed; top: 30px; right: 30px; padding: 15px 25px; border-radius: 12px; color: white; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 10px; }
+        #customToast.show { transform: translateX(0); }
+        .toast-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .toast-error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        .toast-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    </style>
+</head>
+<body>
+
+    <div class="premium-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <nav>
+        <div class="brand-logo" onclick="window.location.href='dashboard.html'">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>TaskHub System</span>
+        </div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            <button class="back-btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+        </div>
+    </nav>
+
+    <!-- Layout مقسوم لجزئين يمين ويسار مع تثبيت الفورم -->
+    <div class="container">
+        
+        <!-- Post Announcement Form (Sticky Left Side) -->
+        <div class="post-side">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>
+                Post Announcement
+            </h2>
+            <div class="form-group">
+                <label>Announcement Title</label>
+                <input type="text" id="annTitle" placeholder="e.g., Office closed on Thursday">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="annCategory">
+                    <option value="General">🔵 General Information</option>
+                    <option value="Important">🔴 Important / Urgent</option>
+                    <option value="Event">🟢 Company Event</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message Content</label>
+                <textarea id="annMessage" rows="8" placeholder="Write an engaging message here..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="postAnnouncement()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Publish Announcement
+            </button>
+        </div>
+
+        <!-- Current Announcements (Scrolling Right Side) -->
+        <div class="feed-side">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Active Announcements
+            </h2>
+            <div id="announcementsList" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Announcements will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: var(--danger);">Delete Announcement?</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">This will remove the announcement from all employees' feeds.</p>
+            <div class="modal-actions">
+                <button class="btn-danger-yes" onclick="executeDelete()">Yes, Delete</button>
+                <button class="btn-cancel-no" onclick="closeDeleteModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="customToast">
+        <svg id="toastIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMsg">Notification</span>
+    </div>
+
+    <script>
+        let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+        if (!activeUser || (activeUser.role !== "manager" && activeUser.empId !== "2300" && activeUser.empId !== "admin")) {
+            window.location.href = "index.html"; 
+        }
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (localStorage.getItem("theme") === "dark") { document.documentElement.setAttribute("data-theme", "dark"); themeToggleBtn.innerText = "☀️"; }
+        function toggleTheme() {
+            if (document.documentElement.getAttribute("data-theme") === "dark") {
+                document.documentElement.removeAttribute("data-theme"); localStorage.setItem("theme", "light"); themeToggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark"); localStorage.setItem("theme", "dark"); themeToggleBtn.innerText = "☀️";
+            }
+        }
+
+        function showToast(message, type = "success") {
+            let toast = document.getElementById("customToast"); 
+            let msgSpan = document.getElementById("toastMsg");
+            let iconSvg = document.getElementById("toastIcon");
+            
+            msgSpan.innerText = message; 
+            toast.className = "toast-" + type + " show";
+            
+            if (type === 'success') {
+                iconSvg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            } else if (type === 'warning') {
+                iconSvg.innerHTML = '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>';
+            } else {
+                iconSvg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+            }
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        function loadAnnouncements() {
+            let announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+            let listContainer = document.getElementById("announcementsList");
+            listContainer.innerHTML = "";
+
+            // 🚀 Sorting Logic: Pinned items first, then by timestamp (newest first)
+            announcements.sort((a, b) => {
+                if (a.pinned === b.pinned) {
+                    return b.timestamp - a.timestamp;
+                }
+                return a.pinned ? -1 : 1;
+            });
+
+            if (announcements.length === 0) {
+                listContainer.innerHTML = "<div class='empty-msg'>No active announcements found. Create one to inform the team!</div>";
+                return;
+            }
+
+            announcements.forEach(ann => {
+                let canDelete = ann.authorId === activeUser.empId || activeUser.empId === "2300" || activeUser.empId === "admin";
+                
+                let deleteBtnHtml = canDelete ? `
+                    <button class="btn-action btn-delete-ann" onclick="openDeleteModal('${ann.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Delete
+                    </button>
+                ` : '';
+
+                let pinBtnHtml = canDelete ? `
+                    <button class="btn-action ${ann.pinned ? 'btn-unpin' : 'btn-pin'}" onclick="togglePin('${ann.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        ${ann.pinned ? 'Unpin' : 'Pin'}
+                    </button>
+                ` : '';
+
+                let pinnedClass = ann.pinned ? 'pinned' : '';
+                let ribbonHtml = ann.pinned ? '<div class="pinned-ribbon">📌 PINNED</div>' : '';
+                
+                let authorInitials = ann.author.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                listContainer.innerHTML += `
+                    <div class="ann-card ${ann.category} ${pinnedClass}">
+                        ${ribbonHtml}
+                        <div class="ann-header">
+                            <div class="ann-title-area">
+                                <span class="badge ${ann.category}">${ann.category}</span>
+                                <h3 class="ann-title">${ann.title}</h3>
+                            </div>
+                        </div>
+                        <div class="ann-meta">
+                            <div style="display: flex; align-items: center;">
+                                <div class="author-avatar">${authorInitials}</div>
+                                <span>${ann.author}</span>
+                            </div>
+                            <span>•</span>
+                            <span>🕒 ${ann.date}</span>
+                        </div>
+                        <div class="ann-body">${ann.message}</div>
+                        
+                        <div class="ann-actions">
+                            ${pinBtnHtml}
+                            ${deleteBtnHtml}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function postAnnouncement() {
+            let title = document.getElementById("annTitle").value.trim();
+            let category = document.getElementById("annCategory").value;
+            let message = document.getElementById("annMessage").value.trim();
+
+            if (!title || !message) {
+                showToast("Please provide both a title and a message.", "error");
+                return;
+            }
+
+            let announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+            
+            let newAnn = {
+                id: "ANN" + Date.now(),
+                title: title,
+                category: category,
+                message: message,
+                author: activeUser.firstName + " " + activeUser.lastName,
+                authorId: activeUser.empId,
+                date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) + " at " + new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'}),
+                timestamp: Date.now(),
+                pinned: false // ميزة التثبيت الافتراضية
+            };
+
+            announcements.push(newAnn);
+            localStorage.setItem("announcements", JSON.stringify(announcements));
+
+            document.getElementById("annTitle").value = "";
+            document.getElementById("annMessage").value = "";
+            document.getElementById("annCategory").value = "General";
+
+            showToast("Announcement published to all employees!", "success");
+            loadAnnouncements();
+        }
+
+        // 📌 دالة تثبيت الرسالة
+        function togglePin(id) {
+            let announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+            let index = announcements.findIndex(a => a.id === id);
+            
+            if(index !== -1) {
+                announcements[index].pinned = !announcements[index].pinned;
+                localStorage.setItem("announcements", JSON.stringify(announcements));
+                
+                if (announcements[index].pinned) {
+                    showToast("Announcement pinned to the top!", "warning");
+                } else {
+                    showToast("Announcement unpinned.", "success");
+                }
+                loadAnnouncements();
+            }
+        }
+
+        let annToDeleteId = null;
+        function openDeleteModal(id) {
+            annToDeleteId = id;
+            document.getElementById("deleteModal").style.display = "flex";
+        }
+        function closeDeleteModal() {
+            annToDeleteId = null;
+            document.getElementById("deleteModal").style.display = "none";
+        }
+        function executeDelete() {
+            if (annToDeleteId) {
+                let announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+                announcements = announcements.filter(a => a.id !== annToDeleteId);
+                localStorage.setItem("announcements", JSON.stringify(announcements));
+                
+                showToast("Announcement deleted successfully.");
+                loadAnnouncements();
+            }
+            closeDeleteModal();
+        }
+
+        loadAnnouncements();
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'announcements') loadAnnouncements();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Announcements - TaskHub</title>
+    <!-- خط Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: rgba(255, 255, 255, 0.85); /* شفافية زجاجية */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(30, 64, 175, 0.15);
+            
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --info: #0284c7;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6; 
+            --primary-hover: #60a5fa;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --bg-color: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-main); 
+            transition: background-color 0.3s, color 0.3s; 
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* الهالة والشبكة */
+        .premium-glow {
+            position: fixed; top: -20%; right: -15%; width: 65%; height: 140%;
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            filter: blur(140px); border-radius: 50%; z-index: 0; opacity: 0.8;
+            animation: pulseGlow 10s infinite alternate ease-in-out; pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 1; pointer-events: none;
+        }
+
+        /* النافبار الزجاجي */
+        nav { 
+            background-color: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
+        }
+        [data-theme="dark"] nav { background-color: rgba(15, 23, 42, 0.75); }
+
+        .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; color: var(--text-main); cursor: pointer; }
+        .brand-logo span { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .theme-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
+        .back-btn { background-color: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .back-btn:hover { background-color: #475569; transform: translateY(-2px); }
+
+        .container { max-width: 850px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 2; }
+        
+        .header-section { margin-bottom: 30px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; }
+        .header-section h2 { margin: 0; color: var(--primary-color); font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .header-section p { margin: 8px 0 0 0; color: var(--text-muted); font-size: 15px; font-weight: 400; }
+
+        /* بطاقات الإعلانات الزجاجية */
+        .announcement-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 30px; border-radius: 20px; 
+            border-left: 6px solid var(--info); 
+            border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 24px; transition: 0.3s; 
+        }
+        .announcement-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(30, 64, 175, 0.1); }
+        .announcement-card.Important { border-left-color: var(--danger); }
+        .announcement-card.Event { border-left-color: var(--success); }
+        
+        .announcement-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .announcement-title { margin: 0; font-size: 20px; color: var(--text-main); font-weight: 700; }
+        
+        .badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .badge.General { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+        .badge.Important { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        .badge.Event { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+
+        .announcement-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; display: flex; gap: 20px; font-weight: 500; }
+        
+        .announcement-body { font-size: 15px; color: var(--text-main); line-height: 1.8; background: rgba(0,0,0,0.03); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); white-space: pre-wrap; }
+        [data-theme="dark"] .announcement-body { background: rgba(255,255,255,0.03); }
+        
+        .empty-msg { color: var(--text-muted); font-style: italic; background: var(--card-bg); padding: 40px; border-radius: 20px; text-align: center; border: 1px dashed var(--border-color); font-size: 16px; backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body>
+
+    <!-- الهالة والشبكة -->
+    <div class="premium-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <nav>
+        <div class="brand-logo" onclick="window.location.href='emp_dashboard.html'">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>TaskHub Workspace</span>
+        </div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            <button class="back-btn" onclick="window.location.href='emp_dashboard.html'">Back</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h2>📢 Company Announcements</h2>
+            <p>Stay updated with the latest news, events, and important information from the management.</p>
+        </div>
+
+        <div id="feedList">
+            <!-- Announcements will load here -->
+        </div>
+    </div>
+
+    <script>
+        let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+        if (!activeUser || activeUser.role === "manager" || activeUser.empId === "2300" || activeUser.empId === "admin") { 
+            window.location.href = "index.html"; 
+        }
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (localStorage.getItem("theme") === "dark") { document.documentElement.setAttribute("data-theme", "dark"); themeToggleBtn.innerText = "☀️"; }
+        function toggleTheme() {
+            if (document.documentElement.getAttribute("data-theme") === "dark") {
+                document.documentElement.removeAttribute("data-theme"); localStorage.setItem("theme", "light"); themeToggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark"); localStorage.setItem("theme", "dark"); themeToggleBtn.innerText = "☀️";
+            }
+        }
+
+        function loadAnnouncements() {
+            let announcements = JSON.parse(localStorage.getItem("announcements")) || [];
+            let listContainer = document.getElementById("feedList");
+            listContainer.innerHTML = "";
+
+            announcements.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (announcements.length === 0) {
+                listContainer.innerHTML = "<div class='empty-msg'>No announcements have been posted yet. Check back later!</div>";
+                return;
+            }
+
+            announcements.forEach(ann => {
+                let card = document.createElement("div");
+                card.className = "announcement-card " + ann.category;
+                
+                card.innerHTML = `
+                    <div class="announcement-header">
+                        <h3 class="announcement-title">${ann.title}</h3>
+                        <span class="badge ${ann.category}">${ann.category}</span>
+                    </div>
+                    <div class="announcement-meta">
+                        <span>👤 Posted by: <strong>${ann.author}</strong></span>
+                        <span>🕒 Date: ${ann.date}</span>
+                    </div>
+                    <div class="announcement-body">${ann.message}</div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        loadAnnouncements();
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'announcements') {
+                loadAnnouncements();
+            }
+        });
+    </script>
+</body>
+</html>

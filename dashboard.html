@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - TaskHub System</title>
+    <!-- خط Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(30, 64, 175, 0.1);
+            --super-admin: #8b5cf6;
+            --danger: #ef4444;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6; 
+            --primary-hover: #60a5fa;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --bg-color: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.7); 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.05);
+            --super-admin: #a855f7;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-main); 
+            transition: background-color 0.3s, color 0.3s; 
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* الهالة الزرقاء والشبكة */
+        .premium-glow {
+            position: fixed; top: -20%; right: -15%; width: 65%; height: 140%;
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            filter: blur(140px); border-radius: 50%; z-index: 0; opacity: 0.8;
+            animation: pulseGlow 10s infinite alternate ease-in-out; pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 1; pointer-events: none;
+        }
+
+        /* شريط علوي زجاجي */
+        nav { 
+            background-color: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid rgba(30, 64, 175, 0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+        [data-theme="dark"] nav { background-color: rgba(15, 23, 42, 0.75); border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; color: var(--text-main); }
+        .brand-logo span { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-user { display: flex; align-items: center; gap: 20px; font-weight: 500; }
+        
+        .theme-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
+        
+        .logout-btn { 
+            background-color: var(--danger); color: white; border: none; padding: 8px 20px; 
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; transition: 0.2s; 
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+        }
+        .logout-btn:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3); }
+
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 2; }
+        
+        /* البانر الترحيبي */
+        .hero { 
+            background: var(--primary-gradient); color: white; padding: 40px; 
+            border-radius: 20px; margin-bottom: 40px; box-shadow: 0 15px 30px rgba(30, 64, 175, 0.25); 
+            position: relative; overflow: hidden;
+        }
+        .hero::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%); pointer-events: none;
+        }
+        .hero h1 { margin: 0 0 10px 0; font-size: 32px; font-weight: 700; position: relative; z-index: 1; }
+        .hero p { margin: 0; opacity: 0.9; font-size: 16px; position: relative; z-index: 1; font-weight: 300; }
+
+        /* البطاقات الزجاجية */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        
+        .card { 
+            background-color: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border-color); transition: all 0.3s ease; cursor: pointer; 
+            display: flex; flex-direction: column; gap: 15px; position: relative;
+        }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(30, 64, 175, 0.12); border-color: rgba(30, 64, 175, 0.3); }
+        
+        /* 💎 تصميم الإشعار الزجاجي الجديد (Glassmorphic Pill) */
+        .notification-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(239, 68, 68, 0.1); /* شفافية زجاجية */
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-weight: 700;
+            font-size: 12px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 20px;
+            z-index: 10;
+            animation: subtlePulse 2s infinite; /* نبض ناعم وراقي */
+        }
+
+        [data-theme="dark"] .notification-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171; /* أحمر أفتح للدارك مود */
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes subtlePulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.25); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .card-icon {
+            width: 48px; height: 48px; background: rgba(30, 64, 175, 0.1); border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; color: var(--primary-color);
+        }
+        [data-theme="dark"] .card-icon { background: rgba(59, 130, 246, 0.15); }
+
+        .card h3 { margin: 0; color: var(--text-main); font-size: 20px; font-weight: 600; }
+        .card p { color: var(--text-muted); font-size: 14px; margin: 0; line-height: 1.6; }
+
+        /* بطاقة السوبر أدمن */
+        .admin-card { display: none; border-color: rgba(139, 92, 246, 0.4); border-width: 2px; overflow: hidden; }
+        .admin-card .card-icon { background: rgba(139, 92, 246, 0.15); color: var(--super-admin); }
+        .admin-card h3 { color: var(--super-admin); }
+        .admin-card:hover { border-color: var(--super-admin); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="premium-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <nav>
+        <div class="brand-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>TaskHub</span>
+        </div>
+        <div class="nav-user">
+            <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            <span id="welcomeUser">Welcome, User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1 id="heroTitle">Welcome to your Dashboard</h1>
+            <p>Manage tasks, employees, and company operations seamlessly from one place.</p>
+        </div>
+
+        <div class="grid">
+            <!-- 1. Assign Task -->
+            <div class="card" onclick="window.location.href='assign_task.html'">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div>
+                    <h3>Assign Task</h3>
+                    <p>Allocate tasks to employees, set priorities, and track progress.</p>
+                </div>
+            </div>
+
+            <!-- 2. Employees (الكبسولة الزجاجية للإشعارات) -->
+            <div class="card" onclick="window.location.href='employees.html'">
+                <span class="notification-badge" id="badgeEmployees" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span id="badgeEmployeesCount">0</span>
+                </span>
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <div>
+                    <h3>Employees</h3>
+                    <p>View employee profiles, contracts, salaries, and evaluate performance.</p>
+                </div>
+            </div>
+
+            <!-- 3. Meeting Rooms -->
+            <div class="card" onclick="window.location.href='meetings.html'">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+                </div>
+                <div>
+                    <h3>Meeting Rooms</h3>
+                    <p>Schedule and manage conference room reservations smartly.</p>
+                </div>
+            </div>
+
+            <!-- 4. Leave Requests (الكبسولة الزجاجية للإشعارات) -->
+            <div class="card" onclick="window.location.href='leave_requests.html'">
+                <span class="notification-badge" id="badgeLeaves" style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span id="badgeLeavesCount">0</span>
+                </span>
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path><line x1="14" y1="2" x2="22" y2="10"></line><line x1="18" y1="2" x2="22" y2="6"></line><line x1="14" y1="6" x2="18" y2="10"></line></svg>
+                </div>
+                <div>
+                    <h3>Leave Requests</h3>
+                    <p>Review, approve, or reject employee vacation applications.</p>
+                </div>
+            </div>
+
+            <!-- 5. Announcements -->
+            <div class="card" onclick="window.location.href='announcements.html'">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>
+                </div>
+                <div>
+                    <h3>Announcements</h3>
+                    <p>Broadcast important news, updates, and notices to all employees.</p>
+                </div>
+            </div>
+            
+            <!-- 6. Super Admin Card (Hidden by default) -->
+            <div class="card admin-card" id="superAdminCard" onclick="window.location.href='super_admin.html'">
+                <div class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <div>
+                    <h3>Super Admin</h3>
+                    <p>Manage system users, view accounts, and promote employees to managers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+        if (!activeUser) {
+            window.location.href = "index.html";
+        } else {
+            document.getElementById("welcomeUser").innerText = "Hello, " + activeUser.firstName;
+            document.getElementById("heroTitle").innerText = "Welcome back, " + activeUser.firstName + "!";
+            
+            // 🔥 إظهار بطاقة السوبر أدمن لليوزر 2300 فقط
+            if (activeUser.empId === "2300") {
+                document.getElementById("superAdminCard").style.display = "flex"; 
+            }
+        }
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+            themeToggleBtn.innerText = "☀️";
+        }
+        function toggleTheme() {
+            if (document.documentElement.getAttribute("data-theme") === "dark") {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("theme", "light");
+                themeToggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+                themeToggleBtn.innerText = "☀️";
+            }
+        }
+        function logout() {
+            sessionStorage.removeItem("activeUser");
+            window.location.href = "index.html";
+        }
+
+        // 🧠 نظام الإشعارات الذكي (Smart Glass Badges)
+        function getRank(user) {
+            if (user.empId === "2300") return 3; 
+            if (user.role === "manager" || user.empId === "admin") return 2; 
+            return 1; 
+        }
+
+        function updateNotifications() {
+            if (!activeUser) return;
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let allTasks = JSON.parse(localStorage.getItem("allTasks")) || [];
+            let leaveRequests = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+
+            let myRank = getRank(activeUser);
+            // تحديد الموظفين اللي تحت إدارتي
+            let subordinateIds = users.filter(u => u.empId !== activeUser.empId && myRank > getRank(u)).map(u => u.empId);
+
+            // 1. تحديث إشعار المهام المكتملة
+            let pendingRatingsCount = allTasks.filter(t => t.status === "Completed" && !t.ratingReceived && subordinateIds.includes(t.employeeId)).length;
+            let empBadge = document.getElementById("badgeEmployees");
+            let empBadgeCount = document.getElementById("badgeEmployeesCount");
+            
+            if (pendingRatingsCount > 0) {
+                empBadgeCount.innerText = pendingRatingsCount > 99 ? "99+" : pendingRatingsCount + " New";
+                empBadge.style.display = "flex";
+            } else {
+                empBadge.style.display = "none";
+            }
+
+            // 2. تحديث إشعار طلبات الإجازة
+            let pendingLeavesCount = leaveRequests.filter(r => r.status === "Pending" && subordinateIds.includes(r.empId)).length;
+            let leaveBadge = document.getElementById("badgeLeaves");
+            let leaveBadgeCount = document.getElementById("badgeLeavesCount");
+            
+            if (pendingLeavesCount > 0) {
+                leaveBadgeCount.innerText = pendingLeavesCount > 99 ? "99+" : pendingLeavesCount + " New";
+                leaveBadge.style.display = "flex";
+            } else {
+                leaveBadge.style.display = "none";
+            }
+        }
+
+        updateNotifications();
+
+        window.addEventListener('storage', function(e) {
+            if (['allTasks', 'leaveRequests', 'users'].includes(e.key)) {
+                updateNotifications();
+            }
+        });
+    </script>
+</body>
+</html>

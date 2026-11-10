@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskHub - Login</title>
+    <!-- إضافة خط Poppins من جوجل -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            --success: #059669; 
+            --danger: #dc2626; 
+            --warning: #d97706; 
+            --info: #0284c7;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden; /* لمنع ظهور أشرطة التمرير */
+        }
+
+        /* 1. الهالة الزرقاء الفخمة اللي تأكل يمين الشاشة */
+        .premium-glow {
+            position: absolute;
+            top: -20%;
+            right: -15%;
+            width: 65%;
+            height: 140%;
+            /* تدرج لوني ثلاثي الأبعاد */
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            /* دمج فائق النعومة مع الأبيض */
+            filter: blur(140px);
+            border-radius: 50%;
+            z-index: 0;
+            opacity: 0.9;
+            /* حركة تنفس بطيئة وفخمة */
+            animation: pulseGlow 10s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        /* 2. شبكة الخطوط (Grid) تغطي الشاشة بالكامل */
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; /* حجم المربعات */
+            z-index: 1;
+            pointer-events: none; /* عشان ما تأثر على ضغطات الماوس */
+        }
+
+        /* 3. مربع تسجيل الدخول الزجاجي */
+        .auth-container {
+            background-color: rgba(255, 255, 255, 0.75); /* شفافية أعلى */
+            backdrop-filter: blur(24px); /* تمويه زجاجي عالي */
+            -webkit-backdrop-filter: blur(24px);
+            padding: 40px 50px;
+            border-radius: 24px;
+            /* ظل ناعم يفصل البطاقة عن الخلفية */
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            z-index: 2; /* فوق الشبكة والهالة */
+        }
+
+        .auth-header { text-align: center; margin-bottom: 35px; display: flex; flex-direction: column; align-items: center; }
+        
+        .brand-logo {
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 32px; 
+            font-weight: 800; 
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .brand-logo span {
+            background: var(--primary-gradient); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-header p { margin: 0; color: var(--text-muted); font-size: 14px; font-weight: 500; }
+
+        .tabs { 
+            display: flex; 
+            background-color: rgba(241, 245, 249, 0.7); 
+            border-radius: 12px; 
+            padding: 5px; 
+            margin-bottom: 30px; 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .tab { 
+            flex: 1; 
+            text-align: center; 
+            padding: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px;
+            color: var(--text-muted); 
+            border-radius: 8px; 
+            transition: all 0.3s ease; 
+        }
+        .tab.active { 
+            background-color: white; 
+            color: var(--primary-color); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+        }
+
+        .form-section { display: none; animation: fadeIn 0.3s ease; }
+        .form-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        
+        input { 
+            width: 100%; 
+            padding: 14px 15px; 
+            border: 2px solid rgba(226, 232, 240, 0.8); 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 14px; 
+            transition: all 0.3s ease; 
+            background-color: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+        }
+        input:focus { 
+            border-color: var(--primary-color); 
+            background-color: white;
+            outline: none; 
+            box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); 
+        }
+
+        .password-wrapper { position: relative; display: flex; align-items: center; }
+        .password-wrapper input { padding-right: 80px; }
+        
+        .toggle-pass-btn { position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 5px; display: flex; align-items: center; justify-content: center; outline: none; transition: 0.2s; }
+        .toggle-pass-btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .toggle-pass-btn:hover { color: var(--primary-color); transform: scale(1.1); }
+
+        .caps-warning { position: absolute; right: 45px; font-size: 10px; background-color: var(--warning); color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.2s ease-in-out; }
+        .caps-warning.show { opacity: 1; }
+
+        .btn-main { 
+            width: 100%; 
+            background: var(--primary-gradient); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 16px; 
+            transition: all 0.3s ease; 
+            margin-top: 15px; 
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.25);
+        }
+        .btn-main:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.35); 
+        }
+
+        .error-msg { color: var(--danger); font-size: 13px; text-align: center; margin-top: 10px; display: none; font-weight: 600; }
+
+        .forgot-link { display: block; text-align: center; margin-top: 20px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .forgot-link:hover { color: var(--primary-color); text-decoration: underline; }
+
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid rgba(30, 64, 175, 0.1); }
+        .modal-content h3 { margin-top: 0; color: var(--primary-color); font-size: 22px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 25px; }
+        .modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; }
+        .btn-verify { background: var(--primary-gradient); box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2); }
+        .btn-verify:hover { transform: translateY(-2px); }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-success:hover { transform: translateY(-2px); }
+        .btn-cancel { background-color: #64748b; }
+        .btn-cancel:hover { background-color: #475569; }
+
+        #toastWarning { position: fixed; top: 20px; right: 20px; background-color: var(--warning); color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; font-size: 14px; transform: translateX(150%); transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); z-index: 9999; }
+        #toastWarning.show { transform: translateX(0); }
+    </style>
+</head>
+<body>
+
+    <!-- الهالة الفخمة المندمجة بقوة مع الأبيض -->
+    <div class="premium-glow"></div>
+    <!-- شبكة الخطوط الشفافة -->
+    <div class="grid-overlay"></div>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="brand-logo">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                <span>TaskHub</span>
+            </div>
+            <p>Your ultimate workspace solution</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" id="tabLogin" onclick="switchForm('login')">Login</div>
+            <div class="tab" id="tabRegister" onclick="switchForm('register')">Register</div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginSection" class="form-section active">
+            <div class="form-group">
+                <label>Employee ID</label>
+                <input type="text" id="loginId" placeholder="Enter your ID" oninput="blockArabic(this)">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="Enter your password" oninput="blockArabic(this)" onkeyup="checkCapsLock(event, 'capsLogin')" onmousedown="checkCapsLock(event, 'capsLogin')">
+                    <span class="caps-warning" id="capsLogin">CAPS ON</span>
+                    <button type="button" class="toggle-pass-btn" onclick="togglePassword('loginPassword', this)">
+                        <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <p id="loginError" class="error-msg"></p>
+            <button class="btn-main" onclick="handleLogin()">Sign In</button>
+            <span class="forgot-link" onclick="openVerifyModal()">Forgot Password?</span>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerSection" class="form-section">
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>First Name</label>
+                    <input type="text" id="regFirstName" placeholder="John" oninput="blockArabic(this)">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Last Name</label>
+                    <input type="text" id="regLastName" placeholder="Doe" oninput="blockArabic(this)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="regEmail" placeholder="name@company.com" oninput="blockArabic(this)">
+            </div>
+            <div class="form-group">
+                <label>Employee ID</label>
+                <input type="text" id="regEmpId" placeholder="Choose an ID" oninput="blockArabic(this)">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="regPassword" placeholder="Create a strong password" oninput="blockArabic(this)" onkeyup="checkCapsLock(event, 'capsReg')" onmousedown="checkCapsLock(event, 'capsReg')">
+                    <span class="caps-warning" id="capsReg">CAPS ON</span>
+                    <button type="button" class="toggle-pass-btn" onclick="togglePassword('regPassword', this)">
+                        <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <p id="regError" class="error-msg"></p>
+            <button class="btn-main" onclick="handleRegister()">Create Account</button>
+        </div>
+    </div>
+
+    <!-- Modals for Forgot Password -->
+    <div id="verifyModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Verify Identity</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Please enter your Employee ID and Email to reset your password.</p>
+            <input type="text" id="verifyId" placeholder="Employee ID" style="margin-bottom: 15px;" oninput="blockArabic(this)">
+            <input type="email" id="verifyEmail" placeholder="Email Address" oninput="blockArabic(this)">
+            <p id="verifyError" class="error-msg"></p>
+            <div class="modal-actions">
+                <button class="btn-verify" onclick="checkIdentity()">Verify Details</button>
+                <button class="btn-cancel" onclick="closeVerifyModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: #10b981;">Create New Password</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Your identity has been verified. Enter a new password.</p>
+            
+            <div class="password-wrapper" style="margin-bottom: 15px;">
+                <input type="password" id="newPassword" placeholder="New Password" oninput="blockArabic(this)" onkeyup="checkCapsLock(event, 'capsNew')" onmousedown="checkCapsLock(event, 'capsNew')">
+                <span class="caps-warning" id="capsNew">CAPS ON</span>
+                <button type="button" class="toggle-pass-btn" onclick="togglePassword('newPassword', this)">
+                    <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </button>
+            </div>
+            
+            <div class="password-wrapper">
+                <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" oninput="blockArabic(this)" onkeyup="checkCapsLock(event, 'capsConfirm')" onmousedown="checkCapsLock(event, 'capsConfirm')">
+                <span class="caps-warning" id="capsConfirm">CAPS ON</span>
+                <button type="button" class="toggle-pass-btn" onclick="togglePassword('confirmNewPassword', this)">
+                    <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </button>
+            </div>
+
+            <p id="resetError" class="error-msg"></p>
+            <div class="modal-actions">
+                <button class="btn-success" onclick="saveNewPassword()">Save Password</button>
+                <button class="btn-cancel" onclick="closeResetModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast for Arabic Warning -->
+    <div id="toastWarning">⚠️ Arabic characters are not allowed!</div>
+
+    <script>
+        // التحقق مما إذا كان المستخدم مسجل دخوله مسبقاً
+        window.onload = function() {
+            let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+            if (activeUser) {
+                if (activeUser.role === "manager" || activeUser.empId === "2300" || activeUser.empId === "admin") {
+                    window.location.href = "dashboard.html";
+                } else {
+                    window.location.href = "emp_dashboard.html";
+                }
+            }
+        };
+
+        function blockArabic(inputField) {
+            const arabicRegex = /[\u0600-\u06FF\u0660-\u0669\u06F0-\u06F9\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+            if (arabicRegex.test(inputField.value)) {
+                inputField.value = inputField.value.replace(arabicRegex, '');
+                let toast = document.getElementById("toastWarning");
+                toast.classList.add("show");
+                setTimeout(() => { toast.classList.remove("show"); }, 3000);
+            }
+        }
+
+        function checkCapsLock(event, warningId) {
+            let warningEl = document.getElementById(warningId);
+            if (event.getModifierState && event.getModifierState('CapsLock')) {
+                warningEl.classList.add('show');
+            } else {
+                warningEl.classList.remove('show');
+            }
+        }
+
+        const eyeOpenSVG = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        const eyeClosedSVG = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
+        function togglePassword(inputId, btnElement) {
+            let passwordInput = document.getElementById(inputId);
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                btnElement.innerHTML = eyeOpenSVG; 
+            } else {
+                passwordInput.type = "password";
+                btnElement.innerHTML = eyeClosedSVG; 
+            }
+        }
+
+        if (!localStorage.getItem("users")) {
+            const defaultUsers = [
+                { empId: "admin", firstName: "System", lastName: "Admin", email: "admin@company.com", password: "admin", role: "manager" },
+                { empId: "101", firstName: "Ahmed", lastName: "Ali", email: "ahmed@company.com", password: "123", role: "employee" }
+            ];
+            localStorage.setItem("users", JSON.stringify(defaultUsers));
+        }
+
+        function switchForm(formType) {
+            document.getElementById("loginSection").classList.remove("active");
+            document.getElementById("registerSection").classList.remove("active");
+            document.getElementById("tabLogin").classList.remove("active");
+            document.getElementById("tabRegister").classList.remove("active");
+            document.getElementById("loginError").style.display = "none";
+            document.getElementById("regError").style.display = "none";
+
+            document.getElementById("loginId").value = "";
+            document.getElementById("loginPassword").value = "";
+
+            document.getElementById("regFirstName").value = "";
+            document.getElementById("regLastName").value = "";
+            document.getElementById("regEmail").value = "";
+            document.getElementById("regEmpId").value = "";
+            document.getElementById("regPassword").value = "";
+
+            document.getElementById("loginPassword").type = "password";
+            document.getElementById("regPassword").type = "password";
+            let eyeBtns = document.querySelectorAll('.toggle-pass-btn');
+            eyeBtns.forEach(btn => btn.innerHTML = eyeClosedSVG);
+
+            if (formType === "login") {
+                document.getElementById("loginSection").classList.add("active");
+                document.getElementById("tabLogin").classList.add("active");
+            } else {
+                document.getElementById("registerSection").classList.add("active");
+                document.getElementById("tabRegister").classList.add("active");
+            }
+        }
+
+        function handleRegister() {
+            let firstName = document.getElementById("regFirstName").value.trim();
+            let lastName = document.getElementById("regLastName").value.trim();
+            let email = document.getElementById("regEmail").value.trim();
+            let empId = document.getElementById("regEmpId").value.trim();
+            let password = document.getElementById("regPassword").value.trim();
+            let errorMsg = document.getElementById("regError");
+
+            if (!firstName || !lastName || !email || !empId || !password) {
+                errorMsg.innerText = "All fields are required!";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let existingUser = users.find(u => u.empId === empId);
+
+            if (existingUser) {
+                errorMsg.innerText = "Employee ID already exists!";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            let newUser = {
+                empId: empId,
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                role: empId.toLowerCase() === "admin" ? "manager" : "employee"
+            };
+
+            users.push(newUser);
+            localStorage.setItem("users", JSON.stringify(users));
+
+            alert("Registration successful! Please login.");
+            switchForm("login");
+        }
+
+        function handleLogin() {
+            let empId = document.getElementById("loginId").value.trim();
+            let password = document.getElementById("loginPassword").value.trim();
+            let errorMsg = document.getElementById("loginError");
+
+            if (!empId || !password) {
+                errorMsg.innerText = "Please enter both ID and Password!";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let user = users.find(u => u.empId === empId && u.password === password);
+
+            if (user) {
+                sessionStorage.setItem("activeUser", JSON.stringify(user));
+                
+                if (user.role === "manager" || user.empId === "2300" || user.empId === "admin") {
+                    window.location.href = "dashboard.html"; 
+                } else {
+                    window.location.href = "emp_dashboard.html"; 
+                }
+            } else {
+                errorMsg.innerText = "Invalid ID or Password!";
+                errorMsg.style.display = "block";
+            }
+        }
+
+        let userToResetId = null;
+
+        function openVerifyModal() {
+            document.getElementById("verifyId").value = "";
+            document.getElementById("verifyEmail").value = "";
+            document.getElementById("verifyError").style.display = "none";
+            document.getElementById("verifyModal").style.display = "flex";
+        }
+
+        function closeVerifyModal() {
+            document.getElementById("verifyModal").style.display = "none";
+        }
+
+        function checkIdentity() {
+            let verifyId = document.getElementById("verifyId").value.trim();
+            let verifyEmail = document.getElementById("verifyEmail").value.trim().toLowerCase();
+            let errorMsg = document.getElementById("verifyError");
+
+            if (!verifyId || !verifyEmail) {
+                errorMsg.innerText = "Please enter both ID and Email.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let foundUser = users.find(u => u.empId === verifyId && u.email.toLowerCase() === verifyEmail);
+
+            if (foundUser) {
+                userToResetId = verifyId;
+                closeVerifyModal();
+                
+                document.getElementById("newPassword").value = "";
+                document.getElementById("confirmNewPassword").value = "";
+                
+                document.getElementById("newPassword").type = "password";
+                document.getElementById("confirmNewPassword").type = "password";
+                document.querySelectorAll('#resetModal .toggle-pass-btn').forEach(btn => btn.innerHTML = eyeClosedSVG);
+
+                document.getElementById("resetError").style.display = "none";
+                document.getElementById("resetModal").style.display = "flex";
+            } else {
+                errorMsg.innerText = "No account matches this ID and Email.";
+                errorMsg.style.display = "block";
+            }
+        }
+
+        function closeResetModal() {
+            userToResetId = null;
+            document.getElementById("resetModal").style.display = "none";
+        }
+
+        function saveNewPassword() {
+            let newPass = document.getElementById("newPassword").value.trim();
+            let confirmPass = document.getElementById("confirmNewPassword").value.trim();
+            let errorMsg = document.getElementById("resetError");
+
+            if (!newPass || !confirmPass) {
+                errorMsg.innerText = "Please fill in all fields.";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                errorMsg.innerText = "Passwords do not match!";
+                errorMsg.style.display = "block";
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            let userIndex = users.findIndex(u => u.empId === userToResetId);
+
+            if (userIndex !== -1) {
+                users[userIndex].password = newPass;
+                localStorage.setItem("users", JSON.stringify(users));
+                
+                alert("Password changed successfully! You can now login.");
+                closeResetModal();
+            }
+        }
+    </script>
+</body>
+</html>

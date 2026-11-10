@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Leave Requests - TaskHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Corporate Trust Theme */
+            --primary-color: #1e40af; 
+            --primary-hover: #1e3a8a;
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+            --bg-color: #f8fafc; 
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(30, 64, 175, 0.15);
+            
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --warning: #f59e0b; 
+            --info: #0284c7;
+            --input-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3b82f6; 
+            --primary-hover: #60a5fa;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --bg-color: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.9);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-main); 
+            transition: background-color 0.3s, color 0.3s; 
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* الهالة والشبكة */
+        .premium-glow {
+            position: fixed; top: -20%; right: -15%; width: 65%; height: 140%;
+            background: linear-gradient(220deg, #0f172a 10%, #1e40af 50%, #38bdf8 100%);
+            filter: blur(140px); border-radius: 50%; z-index: 0; opacity: 0.8;
+            animation: pulseGlow 10s infinite alternate ease-in-out; pointer-events: none;
+        }
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-20px, 30px); }
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: 1; pointer-events: none;
+        }
+
+        nav { 
+            background-color: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 15px 40px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
+        }
+        [data-theme="dark"] nav { background-color: rgba(15, 23, 42, 0.75); }
+
+        .brand-logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; color: var(--text-main); cursor: pointer; }
+        .brand-logo span { background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .theme-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; }
+        .theme-btn:hover { transform: scale(1.1) rotate(15deg); }
+        .back-btn { background-color: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .back-btn:hover { background-color: #475569; transform: translateY(-2px); }
+
+        .container { max-width: 1050px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 2; }
+        
+        .section-header { margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        .section-header h2 { color: var(--primary-color); margin: 0; font-weight: 700; display: flex; align-items: center; gap: 10px; font-size: 24px; }
+        
+        /* التصميم الجديد: شبكة البطاقات المربعة (Grid) */
+        .leave-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 50px; }
+        
+        .leave-card {
+            background-color: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color); border-left: 6px solid var(--warning);
+            transition: 0.3s; display: flex; flex-direction: column; gap: 15px;
+        }
+        .leave-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(30, 64, 175, 0.1); border-color: rgba(30, 64, 175, 0.3); }
+        .leave-card.Approved { border-left-color: var(--success); opacity: 0.95; }
+        .leave-card.Rejected { border-left-color: var(--danger); opacity: 0.95; }
+
+        .emp-header { display: flex; align-items: center; gap: 15px; }
+        .emp-avatar {
+            width: 50px; height: 50px; border-radius: 50%; background: var(--primary-gradient);
+            display: flex; justify-content: center; align-items: center; color: white; font-weight: 700; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(30, 64, 175, 0.3); flex-shrink: 0;
+        }
+        .emp-details h3 { margin: 0 0 4px 0; color: var(--text-main); font-size: 17px; font-weight: 700; }
+        .emp-details p { margin: 0; color: var(--text-muted); font-size: 12px; font-weight: 500; }
+
+        .type-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white; display: inline-block; width: fit-content; }
+        .type-Annual { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+        .type-Sick { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); }
+        .type-Emergency { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+
+        .leave-body { background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px; color: var(--text-main); line-height: 1.6; }
+        [data-theme="dark"] .leave-body { background: rgba(255,255,255,0.03); }
+        
+        /* أزرار الإجراءات داخل البطاقة */
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+        .btn-full { 
+            width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px;
+            padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.3s; border: none; color: white;
+        }
+        .btn-approve { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+        .btn-reject { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .btn-reject:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3); }
+
+        .status-pill { padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; text-align: center; margin-top: auto; }
+        .status-Approved { background-color: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-Rejected { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .empty-msg { grid-column: 1 / -1; color: var(--text-muted); font-style: italic; text-align: center; padding: 40px; background: var(--card-bg); border-radius: 16px; border: 1px dashed var(--border-color); font-size: 15px; backdrop-filter: blur(10px); }
+
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
+        .modal-content h3 { margin-top: 0; font-size: 22px; font-weight: 700; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-main); }
+        textarea { width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); transition: 0.3s; }
+        textarea:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
+        
+        .modal-actions { display: flex; gap: 15px; margin-top: 25px; }
+        .submit-btn { border: none; padding: 12px; flex: 1; border-radius: 10px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .cancel-btn { background-color: #64748b; color: white; border: none; padding: 12px; flex: 1; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .cancel-btn:hover { background-color: #475569; transform: translateY(-2px); }
+
+        #customToast { position: fixed; top: 30px; right: 30px; padding: 15px 25px; border-radius: 12px; color: white; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 10px; }
+        #customToast.show { transform: translateX(0); }
+        .toast-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .toast-error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+    </style>
+</head>
+<body>
+
+    <div class="premium-glow"></div>
+    <div class="grid-overlay"></div>
+
+    <nav>
+        <div class="brand-logo" onclick="window.location.href='dashboard.html'">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" fill="var(--primary-color)" fill-opacity="0.15"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>TaskHub System</span>
+        </div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            <button class="back-btn" onclick="window.location.href='dashboard.html'">Back</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section-header">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path><line x1="14" y1="2" x2="22" y2="10"></line><line x1="18" y1="2" x2="22" y2="6"></line><line x1="14" y1="6" x2="18" y2="10"></line></svg>
+                Pending Leave Requests
+            </h2>
+        </div>
+        <!-- الحاوية صارت Grid -->
+        <div id="pendingList" class="leave-grid"></div>
+
+        <div class="section-header" style="margin-top: 50px;">
+            <h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Processed Requests
+            </h2>
+        </div>
+        <!-- الحاوية صارت Grid -->
+        <div id="historyList" class="leave-grid"></div>
+    </div>
+
+    <!-- Action Modal -->
+    <div id="actionModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;"></p>
+            
+            <div class="form-group">
+                <label>Manager Note (Optional)</label>
+                <textarea id="managerNote" rows="3" placeholder="Add a comment or reason..."></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="confirmBtn" class="submit-btn" onclick="executeAction()">Confirm</button>
+                <button class="cancel-btn" onclick="closeActionModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customToast">
+        <svg id="toastIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMsg">Action successful!</span>
+    </div>
+
+    <script>
+        let activeUser = JSON.parse(sessionStorage.getItem("activeUser"));
+        if (!activeUser || (activeUser.role !== "manager" && activeUser.empId !== "2300" && activeUser.empId !== "admin")) {
+            window.location.href = "index.html"; 
+        }
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (localStorage.getItem("theme") === "dark") { document.documentElement.setAttribute("data-theme", "dark"); themeToggleBtn.innerText = "☀️"; }
+        function toggleTheme() {
+            if (document.documentElement.getAttribute("data-theme") === "dark") {
+                document.documentElement.removeAttribute("data-theme"); localStorage.setItem("theme", "light"); themeToggleBtn.innerText = "🌙";
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark"); localStorage.setItem("theme", "dark"); themeToggleBtn.innerText = "☀️";
+            }
+        }
+
+        function showToast(message, type = "success") {
+            let toast = document.getElementById("customToast"); 
+            let msgSpan = document.getElementById("toastMsg");
+            let iconSvg = document.getElementById("toastIcon");
+            
+            msgSpan.innerText = message; 
+            toast.className = "toast-" + type + " show";
+            
+            if (type === 'success') {
+                iconSvg.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            } else {
+                iconSvg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+            }
+
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        function getRank(user) {
+            if (user.empId === "2300") return 3; 
+            if (user.role === "manager" || user.empId === "admin") return 2; 
+            return 1; 
+        }
+        let myRank = getRank(activeUser);
+
+        function loadRequests() {
+            let allLeaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            
+            let pendingList = document.getElementById("pendingList");
+            let historyList = document.getElementById("historyList");
+            pendingList.innerHTML = ""; historyList.innerHTML = "";
+
+            let visibleLeaves = allLeaves.filter(req => {
+                let empUser = users.find(u => u.empId === req.empId);
+                if (!empUser) return false;
+                return myRank > getRank(empUser);
+            });
+
+            visibleLeaves.sort((a, b) => new Date(b.submitDate) - new Date(a.submitDate));
+
+            let hasPending = false; let hasHistory = false;
+
+            visibleLeaves.forEach(req => {
+                let initials = req.empName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                let fileLink = req.pdfData ? `<a href="${req.pdfData}" download="${req.pdfName}" target="_blank" style="color: var(--primary-color); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; font-size: 12px;">📎 View PDF (${req.pdfName})</a>` : '';
+                let managerNoteDisplay = req.managerNote ? `<div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; font-size: 12px; border: 1px dashed var(--border-color);"><strong>💬 Manager Note:</strong> ${req.managerNote}</div>` : '';
+
+                let cardHtml = `
+                    <div class="leave-card ${req.status}">
+                        <div class="emp-header">
+                            <div class="emp-avatar">${initials}</div>
+                            <div class="emp-details">
+                                <h3>${req.empName}</h3>
+                                <p>ID: ${req.empId} • ${req.submitDate}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="type-badge type-${req.type}">${req.type} Leave</span>
+                        </div>
+                        <div class="leave-body">
+                            <strong>📅 Dates:</strong> ${req.startDate} to ${req.endDate} <br>
+                            <strong>📝 Reason:</strong> "${req.reason}"
+                            ${fileLink}
+                        </div>
+                `;
+
+                if (req.status === "Pending") {
+                    hasPending = true;
+                    cardHtml += `
+                        <div class="actions-grid">
+                            <button class="btn-full btn-reject" onclick="openActionModal('${req.id}', 'Reject')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                Reject
+                            </button>
+                            <button class="btn-full btn-approve" onclick="openActionModal('${req.id}', 'Approve')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Approve
+                            </button>
+                        </div>
+                    </div>`;
+                    pendingList.innerHTML += cardHtml;
+                } else {
+                    hasHistory = true;
+                    cardHtml += `
+                        <div class="status-pill status-${req.status}">
+                            ${req.status === 'Approved' ? '✅ Approved' : '❌ Rejected'}
+                        </div>
+                        ${managerNoteDisplay}
+                    </div>`;
+                    historyList.innerHTML += cardHtml;
+                }
+            });
+
+            if (!hasPending) pendingList.innerHTML = "<div class='empty-msg'>No pending requests. Everything is up to date! 🎉</div>";
+            if (!hasHistory) historyList.innerHTML = "<div class='empty-msg'>No processed leave requests found.</div>";
+        }
+
+        let selectedLeaveId = null;
+        let selectedAction = null;
+
+        function openActionModal(leaveId, action) {
+            selectedLeaveId = leaveId;
+            selectedAction = action;
+            document.getElementById("managerNote").value = "";
+            
+            let modalTitle = document.getElementById("modalTitle");
+            let modalDesc = document.getElementById("modalDesc");
+            let confirmBtn = document.getElementById("confirmBtn");
+
+            if (action === "Approve") {
+                modalTitle.innerText = "Approve Leave Request";
+                modalTitle.style.color = "var(--success)";
+                modalDesc.innerText = "Are you sure you want to approve this request?";
+                confirmBtn.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+                confirmBtn.style.boxShadow = "0 4px 10px rgba(16, 185, 129, 0.2)";
+                confirmBtn.innerText = "Yes, Approve";
+            } else {
+                modalTitle.innerText = "Reject Leave Request";
+                modalTitle.style.color = "var(--danger)";
+                modalDesc.innerText = "Are you sure you want to reject this request?";
+                confirmBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+                confirmBtn.style.boxShadow = "0 4px 10px rgba(239, 68, 68, 0.2)";
+                confirmBtn.innerText = "Yes, Reject";
+            }
+
+            document.getElementById("actionModal").style.display = "flex";
+        }
+
+        function closeActionModal() {
+            selectedLeaveId = null;
+            selectedAction = null;
+            document.getElementById("actionModal").style.display = "none";
+        }
+
+        function executeAction() {
+            if (!selectedLeaveId || !selectedAction) return;
+
+            let allLeaves = JSON.parse(localStorage.getItem("leaveRequests")) || [];
+            let index = allLeaves.findIndex(r => r.id === selectedLeaveId);
+
+            if (index !== -1) {
+                let note = document.getElementById("managerNote").value.trim();
+                allLeaves[index].status = selectedAction === "Approve" ? "Approved" : "Rejected";
+                allLeaves[index].managerNote = note;
+                
+                localStorage.setItem("leaveRequests", JSON.stringify(allLeaves));
+                
+                if (selectedAction === "Approve") {
+                    showToast("Leave request approved successfully!", "success");
+                } else {
+                    showToast("Leave request rejected.", "error");
+                }
+                
+                loadRequests();
+                closeActionModal();
+            }
+        }
+
+        loadRequests();
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'leaveRequests') loadRequests();
+        });
+    </script>
+</body>
+</html>
